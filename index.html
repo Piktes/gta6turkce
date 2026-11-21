@@ -303,8 +303,8 @@ footer ul { margin: 0; padding-left: 18px; }
         '<p class="muted">CouchSubs bir telefonda <b>ya da</b> bir bilgisayarda çalışır. Aşağıdakilerden yalnızca biri yeterli; hangisi elinizdeyse onu seçin.</p>' +
         '<div class="choices">' +
         Object.keys(DEV).map(function (k) { return '<button class="choice" data-dev="' + k + '" aria-pressed="' + (state.dev === k) + '"><b>' + DEV[k].name + '</b><span>' + DEV[k].note + '</span></button>'; }).join('') +
-        '<button class="choice" data-act="iphone" aria-expanded="' + state.iphone + '"><b>Yalnızca iPhone\'um var</b><span>Ne yapabilirim?</span></button></div>' +
-        (state.iphone ? '<div class="help"><h3>iPhone ile</h3><ul class="plain">' + li(['CouchSubs\'ın iPhone ve iPad sürümü yok.', 'Evde bir Windows ya da Mac bilgisayar varsa yukarıdan onu seçin; kurulum bilgisayardan da aynı şekilde yapılır.', 'Android bir tablet ya da ailede birinin Android telefonu da olur.']) + '</ul></div>' : '') +
+        '</div>' +
+        '<p class="term"><b>iPhone ya da iPad\'iniz mi var?</b> CouchSubs bunlara kurulamıyor. Yukarıdaki cihazlardan biri gerekli: evdeki bir bilgisayar ya da Android bir tablet de olur. Bu kılavuzu iPhone\'dan okuyarak takip edebilirsiniz.</p>' +
         '<p class="muted small">Seçtiğiniz cihaz oyun oynarken açık ve PS5 ile aynı ev internetinde kalmalı.</p>' +
         '<div class="btns"><button class="ghost" data-act="totv">Geri</button></div></div>';
     } else if (state.view === 'steps') {
