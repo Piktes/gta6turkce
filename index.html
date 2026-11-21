@@ -38,6 +38,7 @@
   color-scheme: dark;
 }
 * { box-sizing: border-box; }
+[hidden] { display: none !important; }
 html, body { margin: 0; }
 body { background: var(--bg); color: var(--ink); font-family: var(--body); font-size: 18px; line-height: 1.55; }
 .wrap { max-width: 600px; margin: 0 auto; padding: 20px 18px 40px; display: flex; flex-direction: column; gap: 20px; }
@@ -133,9 +134,9 @@ footer ul { margin: 0; padding-left: 18px; }
     lg: { name: 'LG', note: 'webOS 4 ve üstü, kabaca 2018 ve sonrası' }
   };
   var DEV = {
-    android: { name: 'Android telefon ya da tablet' },
-    windows: { name: 'Windows bilgisayar' },
-    mac: { name: 'Mac' }
+    android: { name: 'Android telefon ya da tablet', note: 'Uygulama Google Play\'den kurulur' },
+    windows: { name: 'Windows bilgisayar', note: 'Masaüstü ya da dizüstü' },
+    mac: { name: 'Mac bilgisayar', note: 'MacBook, iMac ya da Mac mini' }
   };
   var P = function (s) { return '<span class="path">' + s + '</span>'; };
   var NET = 'Telefon ya da bilgisayar, TV ve PS5 aynı ev internetine bağlı mı? Biri misafir ağında ya da mobil veride kalmış olabilir.';
@@ -156,7 +157,7 @@ footer ul { margin: 0; padding-left: 18px; }
         : ['<a href="https://couchsubs.enmeraapps.com" target="_blank" rel="noopener">couchsubs.enmeraapps.com</a> adresini açın.', (dev === 'mac' ? 'Mac' : 'Windows') + ' sürümünü indirip kurun ve açın.'],
       see: 'CouchSubs açıldı ve karşınıza konsol seçme ekranı geldi.',
       help: dev === 'android'
-        ? ['Mağazada bulamazsanız uygulamanın paket adı <b>com.couchsubs.mobile</b>; bu adla aratın.', 'iPhone için sürüm yok. Android telefonunuz yoksa bilgisayara kurun: aşağıdan "Seçimi değiştir"e basın.']
+        ? ['Mağazada bulamazsanız uygulamanın paket adı <b>com.couchsubs.mobile</b>; bu adla aratın.', 'Android telefonunuz yoksa bilgisayara da kurabilirsiniz: aşağıdan "Seçimi değiştir"e basın.']
         : ['İndirme sayfası açılmazsa uygulamanın <a href="https://github.com/yorulmazsinan/couchsubs" target="_blank" rel="noopener">GitHub sayfasına</a> bakın.', 'Bilgisayarınız güvenlik uyarısı gösterebilir; uygulama mağaza dışından indirildiği için bu beklenen bir uyarıdır.'] });
 
     s.push({ t: 'Uygulamada PlayStation\'ı seçip ikinci hesapla girin',
@@ -262,14 +263,16 @@ footer ul { margin: 0; padding-left: 18px; }
     return s;
   }
 
-  var state = { view: 'home', tv: null, dev: null, idx: 0, max: 0, help: false, unsure: false };
+  var state = { view: 'home', tv: null, dev: null, idx: 0, max: 0, help: false, unsure: false, iphone: false };
   try {
     var saved = JSON.parse(localStorage.getItem(KEY) || 'null');
     if (saved && typeof saved === 'object') {
       ['view', 'tv', 'dev', 'idx', 'max'].forEach(function (k) { if (saved[k] !== undefined) state[k] = saved[k]; });
     }
   } catch (e) {}
-  if (state.view === 'steps' && !(TV[state.tv] && DEV[state.dev])) state.view = 'home';
+  if (state.view === 'pick') state.view = 'tv';
+  if (state.view === 'dev' && !TV[state.tv]) state.view = 'tv';
+  if ((state.view === 'steps' || state.view === 'end') && !(TV[state.tv] && DEV[state.dev])) state.view = 'home';
   function save() {
     try { localStorage.setItem(KEY, JSON.stringify({ view: state.view, tv: state.tv, dev: state.dev, idx: state.idx, max: state.max })); } catch (e) {}
   }
@@ -285,20 +288,25 @@ footer ul { margin: 0; padding-left: 18px; }
       h = '<div class="card"><h1>GTA 6\'yı PS5\'te Türkçe altyazıyla oynayın</h1>' +
         '<p>Oyunda Türkçe yok ve konsola yama kurulamıyor. Bunun yerine ücretsiz <b>CouchSubs</b> uygulaması oyundaki İngilizce altyazıyı okur ve Türkçesini TV\'de oyunun üstünde gösterir.</p>' +
         '<div class="tv" aria-label="Örnek ekran görüntüsü"><span class="label">Örnek</span><div class="tr">Dokuzda iskelede buluşalım.</div><div class="en">Meet me at the dock at nine.</div></div>' +
-        '<p class="eyebrow">Gerekenler</p><ul class="plain">' + li(['PS5 ve GTA 6', 'Akıllı TV: Google TV / Android TV, Samsung ya da LG', 'Android telefon ya da Windows / Mac bilgisayar', 'Hepsinin aynı ev internetine bağlı olması', 'Ücretsiz ikinci bir PlayStation hesabı (birlikte açacağız)']) + '</ul>' +
+        '<p class="eyebrow">Gerekenler</p><ul class="plain">' + li(['PS5 ve GTA 6', 'Akıllı TV: Google TV / Android TV, Samsung ya da LG', 'Android telefon <b>ya da</b> Windows / Mac bilgisayar (biri yeterli)', 'Hepsinin aynı ev internetine bağlı olması', 'Ücretsiz ikinci bir PlayStation hesabı (birlikte açacağız)']) + '</ul>' +
         '<p class="muted small">Kurulum bir kereliktir ve yaklaşık 15-20 dakika sürer. Her adımı yapınca "Yaptım"a basacaksınız.</p>' +
         '<div class="btns"><button class="primary" data-act="start">Başla</button></div></div>';
-    } else if (state.view === 'pick') {
-      h = '<div class="card"><h2>Önce iki şeyi seçin</h2><p class="muted">Adımlar seçiminize göre düzenlenecek.</p>' +
-        '<fieldset><legend>TV\'niz hangisi?</legend><div class="choices">' +
+    } else if (state.view === 'tv') {
+      h = '<div class="card"><p class="eyebrow">Soru 1 / 2</p><h2>TV\'niz hangisi?</h2><p class="muted">Dokunduğunuzda sonraki soruya geçersiniz. Adımlar seçiminize göre düzenlenecek.</p>' +
+        '<div class="choices">' +
         Object.keys(TV).map(function (k) { return '<button class="choice" data-tv="' + k + '" aria-pressed="' + (state.tv === k) + '"><b>' + TV[k].name + '</b><span>' + TV[k].note + '</span></button>'; }).join('') +
         '<button class="choice" data-act="unsure" aria-expanded="' + state.unsure + '"><b>Emin değilim</b><span>TV türünü nasıl anlarım?</span></button></div>' +
         (state.unsure ? '<div class="help"><h3>TV türünü anlamak</h3><ul class="plain">' + li(['TV\'nin üzerinde <b>Samsung</b> yazıyorsa Samsung\'u, <b>LG</b> yazıyorsa LG\'yi seçin.', 'Başka bir markaysa kumandadaki ana ekran tuşuna basın. Ekranda "Google TV" ya da "Android TV" yazıyorsa veya Google Play Store varsa ilk seçeneği seçin.', 'Hiçbiri değilse (uygulama mağazası olmayan ya da farklı bir sistem kullanan TV) bu yöntem TV\'nizde çalışmayabilir.']) + '</ul></div>' : '') +
-        '</fieldset>' +
-        '<fieldset><legend>CouchSubs\'ı hangi cihaza kuracaksınız?</legend><div class="choices">' +
-        Object.keys(DEV).map(function (k) { return '<button class="choice" data-dev="' + k + '" aria-pressed="' + (state.dev === k) + '"><b>' + DEV[k].name + '</b></button>'; }).join('') +
-        '</div><p class="muted small">iPhone için sürüm yok. Oyun oynarken bu cihazın açık ve aynı ağda kalması gerekir.</p></fieldset>' +
-        '<div class="btns"><button class="primary" data-act="go"' + (state.tv && state.dev ? '' : ' disabled') + '>Adımları göster</button><button class="ghost" data-act="home">Geri</button></div></div>';
+        '<div class="btns"><button class="ghost" data-act="home">Geri</button></div></div>';
+    } else if (state.view === 'dev') {
+      h = '<div class="card"><p class="eyebrow">Soru 2 / 2</p><h2>Çeviri uygulamasını nereye kuracaksınız?</h2>' +
+        '<p class="muted">CouchSubs bir telefonda <b>ya da</b> bir bilgisayarda çalışır. Aşağıdakilerden yalnızca biri yeterli; hangisi elinizdeyse onu seçin.</p>' +
+        '<div class="choices">' +
+        Object.keys(DEV).map(function (k) { return '<button class="choice" data-dev="' + k + '" aria-pressed="' + (state.dev === k) + '"><b>' + DEV[k].name + '</b><span>' + DEV[k].note + '</span></button>'; }).join('') +
+        '<button class="choice" data-act="iphone" aria-expanded="' + state.iphone + '"><b>Yalnızca iPhone\'um var</b><span>Ne yapabilirim?</span></button></div>' +
+        (state.iphone ? '<div class="help"><h3>iPhone ile</h3><ul class="plain">' + li(['CouchSubs\'ın iPhone ve iPad sürümü yok.', 'Evde bir Windows ya da Mac bilgisayar varsa yukarıdan onu seçin; kurulum bilgisayardan da aynı şekilde yapılır.', 'Android bir tablet ya da ailede birinin Android telefonu da olur.']) + '</ul></div>' : '') +
+        '<p class="muted small">Seçtiğiniz cihaz oyun oynarken açık ve PS5 ile aynı ev internetinde kalmalı.</p>' +
+        '<div class="btns"><button class="ghost" data-act="totv">Geri</button></div></div>';
     } else if (state.view === 'steps') {
       var steps = buildSteps(state.tv, state.dev), n = steps.length;
       if (state.idx > n - 1) state.idx = n - 1;
@@ -341,23 +349,24 @@ footer ul { margin: 0; padding-left: 18px; }
   app.addEventListener('click', function (e) {
     var b = e.target.closest('button'); if (!b || b.disabled) return;
     var act = b.getAttribute('data-act'), top = true;
-    if (b.hasAttribute('data-tv')) { state.tv = b.getAttribute('data-tv'); top = false; }
-    else if (b.hasAttribute('data-dev')) { state.dev = b.getAttribute('data-dev'); top = false; }
+    if (b.hasAttribute('data-tv')) { state.tv = b.getAttribute('data-tv'); state.view = 'dev'; state.unsure = false; }
+    else if (b.hasAttribute('data-dev')) { state.dev = b.getAttribute('data-dev'); state.view = 'steps'; state.idx = 0; state.max = 0; state.help = false; state.iphone = false; }
     else if (b.hasAttribute('data-jump')) { state.idx = +b.getAttribute('data-jump'); state.help = false; }
-    else if (act === 'start') { state.view = 'pick'; }
+    else if (act === 'start') { state.view = 'tv'; }
     else if (act === 'home') { state.view = 'home'; }
     else if (act === 'unsure') { state.unsure = !state.unsure; top = false; }
-    else if (act === 'go') { state.view = 'steps'; state.idx = 0; state.max = 0; state.help = false; }
-    else if (act === 'repick') { state.view = 'pick'; }
+    else if (act === 'iphone') { state.iphone = !state.iphone; top = false; }
+    else if (act === 'totv') { state.view = 'tv'; }
+    else if (act === 'repick') { state.view = 'tv'; }
     else if (act === 'help') { state.help = !state.help; top = false; }
-    else if (act === 'back') { state.help = false; if (state.idx > 0) state.idx--; else state.view = 'pick'; }
+    else if (act === 'back') { state.help = false; if (state.idx > 0) state.idx--; else state.view = 'dev'; }
     else if (act === 'done') {
       var n = buildSteps(state.tv, state.dev).length; state.help = false;
       if (state.idx + 1 > state.max) state.max = state.idx + 1;
       if (state.idx + 1 >= n) state.view = 'end'; else state.idx++;
     }
     else if (act === 'review') { state.view = 'steps'; state.idx = 0; }
-    else if (act === 'reset') { state = { view: 'home', tv: null, dev: null, idx: 0, max: 0, help: false, unsure: false }; }
+    else if (act === 'reset') { state = { view: 'home', tv: null, dev: null, idx: 0, max: 0, help: false, unsure: false, iphone: false }; }
     render(top ? 'stepTitle' : null);
   });
 
