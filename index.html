@@ -86,6 +86,16 @@ button:focus-visible, a:focus-visible, summary:focus-visible { outline: 3px soli
 button:disabled { opacity: .45; cursor: not-allowed; }
 a.linkbtn { display: flex; align-items: center; justify-content: center; text-align: center; min-height: 56px; padding: 12px 18px; border-radius: 14px; border: 2px solid var(--ink); background: var(--surface); color: var(--ink); font-weight: 600; text-decoration: none; }
 a.linkbtn::after { content: "\2197"; margin-left: 8px; }
+.viz { border: 1px solid var(--line); border-radius: 12px; padding: 14px; display: flex; flex-direction: column; gap: 10px; background: color-mix(in srgb, var(--bg) 60%, var(--surface)); }
+.viz .cap { font-size: 13px; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); font-weight: 600; }
+.viz small { color: var(--muted); font-size: 14px; }
+.menu { display: flex; flex-direction: column; gap: 6px; }
+.menu div { padding: 8px 12px; border-radius: 8px; border: 1px solid var(--line); background: var(--surface); font-size: 16px; }
+.menu div:last-child { border: 2px solid var(--accent); font-weight: 600; }
+.keys { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+.key { min-width: 48px; height: 48px; padding: 0 8px; border-radius: 10px; border: 2px solid var(--ink); display: flex; align-items: center; justify-content: center; font-weight: 600; font-size: 20px; background: var(--surface); }
+.key.ok { border-radius: 50%; width: 64px; height: 64px; }
+.pips { display: flex; gap: 5px; flex-wrap: wrap; } .pips i { width: 12px; height: 12px; border-radius: 50%; background: var(--accent); }
 .badge { align-self: flex-start; font-style: normal; font-size: 13px; font-weight: 600; letter-spacing: .04em; text-transform: uppercase; color: var(--accent-ink); background: var(--accent); border-radius: 99px; padding: 2px 10px; margin-bottom: 4px; }
 .choices { display: grid; grid-template-columns: 1fr; gap: 10px; }
 .choice { text-align: left; display: flex; flex-direction: column; gap: 2px; font-weight: 400; }
@@ -201,7 +211,7 @@ footer ul { margin: 0; padding-left: 18px; }
         todo: ['TV\'de ' + P('Ayarlar › Cihaz Tercihleri › Hakkında') + ' menüsüne girin.', '<b>Derleme</b> (Build) satırının üzerine gelin.', 'Kumandadaki <b>OK</b> tuşuna art arda 7 kez basın.'],
         see: 'Ekranda "Geliştiricisiniz" yazan kısa bir mesaj belirdi.',
         help: ['Google TV arayüzünde yol biraz farklıdır: ' + P('Ayarlar › Sistem › Hakkında') + ' altında "Android TV OS derlemesi" satırını arayın.', 'Mesaj çıkmadıysa doğru satırda olduğunuzdan emin olup 7 kez yeniden basın.'] });
-      s.push({ t: 'USB hata ayıklamayı açın',
+      s.push({ id: 'usb', t: 'USB hata ayıklamayı açın',
         todo: ['TV\'de ' + P('Ayarlar › Cihaz Tercihleri › Geliştirici seçenekleri') + ' menüsüne girin. Google TV\'de: ' + P('Ayarlar › Sistem › Geliştirici seçenekleri') + '.', P('USB hata ayıklama') + ' seçeneğini açın.', 'Listede varsa ' + P('Ağ üzerinden hata ayıklama') + ' seçeneğini de açın.'],
         see: 'USB hata ayıklama açık görünüyor.',
         help: ['"Geliştirici seçenekleri" görünmüyorsa bir önceki adım tamamlanmamıştır; geri dönüp 7 kez basmayı tekrarlayın.'] });
@@ -248,7 +258,7 @@ footer ul { margin: 0; padding-left: 18px; }
         todo: ['TV\'de <b>LG Content Store</b>\'u açın.', '<b>Developer Mode</b> diye aratıp uygulamayı yükleyin.'],
         see: 'Developer Mode uygulaması TV\'de kurulu.',
         help: ['Mağazada bulamazsanız aramayı İngilizce ve iki kelime olarak yazın: Developer Mode.'] });
-      s.push({ t: 'Developer Mode\'da geliştirici modunu açın',
+      s.push({ id: 'lgdev', t: 'Developer Mode\'da geliştirici modunu açın',
         term: '<b>Geliştirici modu</b>, TV\'ye mağaza dışından uygulama kurulmasına izin veren ayardır.',
         todo: ['TV\'de Developer Mode uygulamasını açın.', 'Az önce açtığınız LG geliştirici hesabının e-postası ve şifresiyle giriş yapın.', P('Dev Mode Status') + ' seçeneğini açın. TV yeniden başlar.'],
         see: 'TV yeniden başladı.',
@@ -280,6 +290,17 @@ footer ul { margin: 0; padding-left: 18px; }
       todo: ['CouchSubs ayarlarında Türkçe altyazının konumunu ' + P('Üstünde') + ' yapın; böylece oyunun kendi altyazısı ve tuş ipuçları kapanmaz.', 'Aynı yerden altyazının boyutunu ve rengini değiştirebilirsiniz.', 'Bağlantı bildirimini gizlemek için PS5\'te ' + P('Ayarlar › Sistem › Uzaktan Oynama') + ' altında ' + P('Uzaktan Oynatma Bağlantı Durumunu Gizle') + ' seçeneğini açın.'],
       see: 'Altyazı rahat okunuyor.',
       help: ['Ücretsiz çeviri iş görür. Daha hızlı ve kaliteli çeviri isterseniz CouchSubs ayarlarına Gemini ya da DeepL API anahtarı eklenebiliyor; ayrıntısı kaynak rehberde.'] });
+    var MIN = { ag: 2, hesap: 5, kur: 2, giris: 2, remote: 2, pair: 1, ip: 2, usb: 1, lgdev: 2, tvsec: 1, tvkur: 2, start: 1, subs: 2, tune: 2, tvdev: tv === 'lg' ? 5 : 1 };
+    var VIZ = {
+      remote: { where: 'PS5', menu: ['Ayarlar', 'Sistem', 'Uzaktan Oynama', 'Uzaktan Oynamayı Etkinleştir'] },
+      ip: { where: 'PS5', menu: ['Ayarlar', 'Ağ', 'Bağlantı Durumu', 'Bağlantı Durumunu Görüntüle', 'IP Adresi'] },
+      subs: { where: 'GTA 6', menu: ['Settings', 'UI', 'Subtitles'] },
+      usb: { where: 'TV', menu: ['Ayarlar', 'Cihaz Tercihleri', 'Geliştirici seçenekleri', 'USB hata ayıklama'] }
+    };
+    if (tv === 'google') VIZ.tvdev = { where: 'TV', menu: ['Ayarlar', 'Cihaz Tercihleri', 'Hakkında', 'Derleme'], ok: 7 };
+    if (tv === 'samsung') VIZ.tvdev = { where: 'TV', menu: ['Keşfet', 'Uygulamalar', 'Uygulama Ayarları'], keys: ['1', '2', '3', '4', '5'] };
+    if (tv === 'lg') VIZ.lgdev = { where: 'TV', menu: ['Developer Mode uygulaması', 'Dev Mode Status'] };
+    s.forEach(function (st) { st.min = MIN[st.id] || 1; st.viz = VIZ[st.id] || null; });
     return s;
   }
 
@@ -303,6 +324,15 @@ footer ul { margin: 0; padding-left: 18px; }
       { q: 'Türkçe altyazı oyunun yazılarını kapatıyor', go: 'tune', a: ['CouchSubs ayarlarında altyazı konumunu "Üstünde" yapın; oyunun kendi altyazısı ve tuş ipuçları görünür kalır.', 'Aynı yerden altyazının boyutunu küçültebilirsiniz.'] },
       { q: '"Uzaktan Oynatma bağlantısı kuruldu" yazısı rahatsız ediyor', go: 'tune', a: ['PS5\'te Ayarlar › Sistem › Uzaktan Oynama menüsünde "Uzaktan Oynatma Bağlantı Durumunu Gizle" seçeneğini açın.'] }
     ];
+  }
+
+  // A plain drawing of where to go and which keys to press. Not a screenshot.
+  function viz(v) {
+    var h = '<div class="viz"><span class="cap">' + v.where + ' üzerinde gidilecek yer</span><div class="menu">' +
+      v.menu.map(function (m, i) { return '<div style="margin-left:' + (i * 14) + 'px">' + m + '</div>'; }).join('') + '</div>';
+    if (v.keys) h += '<span class="cap">Kumandada sırayla basın</span><div class="keys">' + v.keys.map(function (k) { return '<span class="key">' + k + '</span>'; }).join('') + '</div>';
+    if (v.ok) { var pips = ''; for (var i = 0; i < v.ok; i++) pips += '<i></i>'; h += '<span class="cap">Kumandada ' + v.ok + ' kez basın</span><div class="keys"><span class="key ok">OK</span><span class="pips" aria-hidden="true">' + pips + '</span></div>'; }
+    return h + '<small>Temsili çizimdir; ekranınızdaki görünüm ve adlar biraz farklı olabilir.</small></div>';
   }
 
   var state = { view: 'home', tv: null, dev: null, idx: 0, max: 0, help: false, unsure: false, iphone: false, fix: null, back: 'steps' };
@@ -332,7 +362,7 @@ footer ul { margin: 0; padding-left: 18px; }
         '<p>Oyunda Türkçe yok ve konsola yama kurulamıyor. Bunun yerine ücretsiz <b>CouchSubs</b> uygulaması oyundaki İngilizce altyazıyı okur ve Türkçesini TV\'de oyunun üstünde gösterir.</p>' +
         '<div class="tv" aria-label="Örnek ekran görüntüsü"><span class="label">Örnek</span><div class="tr">Dokuzda iskelede buluşalım.</div><div class="en">Meet me at the dock at nine.</div></div>' +
         '<p class="eyebrow">Gerekenler</p><ul class="plain">' + li(['PS5 ve GTA 6', 'Akıllı TV: Google TV / Android TV, Samsung ya da LG', 'Android telefon <b>ya da</b> Windows / Mac bilgisayar (biri yeterli)', 'Hepsinin aynı ev internetine bağlı olması', 'Ücretsiz ikinci bir PlayStation hesabı (birlikte açacağız)']) + '</ul>' +
-        '<p class="muted small">Kurulum bir kereliktir ve yaklaşık 15-20 dakika sürer. Her adımı yapınca "Yaptım"a basacaksınız.</p>' +
+        '<p class="muted small">Kurulum bir kereliktir ve yaklaşık 20-30 dakika sürer; sonraki oynayışlarda bu adımlar tekrarlanmaz. Her adımı yapınca "Yaptım"a basacaksınız.</p>' +
         '<div class="btns"><button class="primary" data-act="start">Başla</button></div></div>';
     } else if (state.view === 'tv') {
       h = '<div class="card"><p class="eyebrow">Soru 1 / 2</p><h2>TV\'niz hangisi?</h2><p class="muted">Dokunduğunuzda sonraki soruya geçersiniz. Adımlar seçiminize göre düzenlenecek.</p>' +
@@ -373,10 +403,11 @@ footer ul { margin: 0; padding-left: 18px; }
       var bar = document.getElementById('progBar');
       bar.setAttribute('aria-valuemax', n); bar.setAttribute('aria-valuenow', state.idx);
       document.getElementById('progFill').style.width = Math.round(state.idx / n * 100) + '%';
-      h = '<div class="card"><p class="eyebrow">Adım ' + (state.idx + 1) + '</p><h2 id="stepTitle" tabindex="-1">' + st.t + '</h2>' +
+      h = '<div class="card"><p class="eyebrow">Adım ' + (state.idx + 1) + ' · yaklaşık ' + st.min + ' dk</p><h2 id="stepTitle" tabindex="-1">' + st.t + '</h2>' +
         (st.why ? '<p class="muted">' + st.why + '</p>' : '') +
         (st.term ? '<p class="term">' + st.term + '</p>' : '') +
         '<ol class="do">' + li(st.todo) + '</ol>' +
+        (st.viz ? viz(st.viz) : '') +
         (st.links ? '<div class="btns">' + st.links.map(function (x) { return '<a class="linkbtn" href="' + x.h + '" target="_blank" rel="noopener">' + x.l + '</a>'; }).join('') + '</div>' : '') +
         '<p class="see"><b>Şunu görmelisiniz</b>' + st.see + '</p>' +
         (state.help ? '<div class="help" id="helpBox"><h3>Takıldıysanız</h3><ul class="plain">' + li(st.help) + '</ul></div>' : '') +
