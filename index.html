@@ -357,14 +357,108 @@ footer ul { margin: 0; padding-left: 18px; }
     var where = dev === 'android' ? 'Ayarlar › Wi-Fi › bağlı ağın ayrıntıları' : dev === 'mac' ? 'Sistem Ayarları › Wi-Fi › Ayrıntılar' : 'Ayarlar › Ağ ve İnternet › bağlı ağın özellikleri, IPv4 adresi';
     var f = function (k, label, hint) { return '<label for="ip-' + k + '">' + label + '<span>' + hint + '</span><input id="ip-' + k + '" data-ip="' + k + '" inputmode="decimal" autocomplete="off" placeholder="192.168.1.25" maxlength="15" value="' + (state.ips[k] || '').replace(/[^0-9.]/g, '') + '"></label>'; };
     var r = state.ipres;
-    return '<div class="viz"><span class="cap">Aynı ağda mı? Denetleyin</span>' +
-      '<p class="small muted">Kılavuz cihazlarınızı kendisi göremez. Adresleri yazarsanız aynı ağda olup olmadıklarını söyler.</p>' +
+    return '<div class="viz"><span class="cap">Ya da adresleri elle karşılaştırın</span>' +
+      '<p class="small muted">Otomatik tarama çalışmazsa adresleri yazın; kılavuz aynı ağda olup olmadıklarını söyler.</p>' +
       '<div class="ipform">' + f('ps', 'PS5\'in IP adresi', 'Ayarlar › Ağ › Bağlantı Durumu › Bağlantı Durumunu Görüntüle') +
       f('dev', devName + ' IP adresi', where) + f('tv', 'TV\'nin IP adresi (isteğe bağlı)', 'TV\'nin ağ ayarlarında, bağlantı durumu ya da ağ bilgisi ekranı') + '</div>' +
       '<button data-act="ipcheck">Karşılaştır</button>' +
       (r ? '<p class="res ' + (r.ok ? 'good' : 'bad') + '" id="ipRes" role="status"><b>' + r.t + '</b>' + r.d + '</p>' : '') +
       '<small>Basit bir karşılaştırmadır; ev ağlarının çoğunda doğru sonuç verir. Adresler yalnızca bu tarayıcıda saklanır.</small></div>';
   }
+  // Automatic scan. Needs the browser's local network permission (current Chrome and Edge); everything else falls back to typing.
+  var TVPORT = { samsung: ':8001/api/v2/', google: ':8008/setup/eureka_info', lg: ':3000/' };
+  var NETS = ['192.168.1', '192.168.0', '192.168.2', '192.168.68', '192.168.50', '192.168.100', '192.168.8', '192.168.3', '192.168.178', '192.168.10', '10.0.0', '10.0.1'];
+  function probe(url, ms) {
+    return new Promise(function (done) {
+      var c = typeof AbortController !== 'undefined' ? new AbortController() : null;
+      var timer = setTimeout(function () { if (c) c.abort(); done(false); }, ms);
+      try {
+        fetch(url, { mode: 'no-cors', cache: 'no-store', redirect: 'manual', targetAddressSpace: 'local', signal: c ? c.signal : undefined })
+          .then(function () { clearTimeout(timer); done(true); }, function () { clearTimeout(timer); done(false); });
+      } catch (e) { clearTimeout(timer); done(false); }
+    });
+  }
+  function pool(items, n, fn) {
+    return new Promise(function (done) {
+      var i = 0, live = 0;
+      function next() {
+        if (i >= items.length && !live) return done();
+        while (live < n && i < items.length) { live++; fn(items[i++]).then(function () { live--; next(); }); }
+      }
+      next();
+    });
+  }
+  function lnaState() {
+    return new Promise(function (done) {
+      var q = typeof navigator !== 'undefined' && navigator.permissions && navigator.permissions.query;
+      if (!q || typeof fetch === 'undefined') return done('unsupported');
+      navigator.permissions.query({ name: 'local-network' }).then(function (r) { done(r.state); }, function () {
+        navigator.permissions.query({ name: 'local-network-access' }).then(function (r) { done(r.state); }, function () { done('unsupported'); });
+      });
+    });
+  }
+  function scanMsg(t) { var el = document.getElementById('scanStatus'); if (el) el.textContent = t; if (state.scan) state.scan.msg = t; }
+  function scanEnd(id, res) { state.scan = { id: id, busy: false, res: res }; if (state.view === 'steps') render(null); }
+  function runScan(id) {
+    var tv = state.tv, want = id === 'ip' ? ['ps'] : ['tv', 'ps'];
+    state.scan = { id: id, busy: true, msg: 'Hazırlanıyor…' }; render(null);
+    var DENIED = { ok: false, t: 'Ağ erişim izni verilmedi.', d: 'Adres çubuğunun solundaki site ayarlarından yerel ağ iznini açıp yeniden deneyin ya da bu adımı yukarıdaki maddeleri izleyerek tamamlayın.' };
+    lnaState().then(function (st) {
+      if (st === 'unsupported') return scanEnd(id, { ok: false, t: 'Bu tarayıcı ağı tarayamıyor.', d: 'Otomatik tarama yalnızca Chrome ya da Edge\'in güncel sürümlerinde çalışır. Sorun değil: bu adımı yukarıdaki maddeleri izleyerek tamamlayın.' });
+      if (st === 'denied') return scanEnd(id, DENIED);
+      var cands = [];
+      ['ps', 'dev', 'tv'].forEach(function (k) { var pp = ipParts(state.ips[k]); if (pp) cands.push(pp.slice(0, 3).join('.')); });
+      var typed = cands.length;
+      NETS.forEach(function (n) { cands.push(n); });
+      cands = cands.filter(function (n, i) { return cands.indexOf(n) === i; });
+      scanMsg('Tarayıcınız izin soracak: "İzin ver"e basın.');
+      probe('http://' + cands[0] + '.1/', 45000).then(lnaState).then(function (st2) {
+        if (st2 === 'denied') return scanEnd(id, DENIED);
+        scanMsg('Ev ağınız aranıyor…');
+        var alive = {};
+        pool(cands, 12, function (n) {
+          return Promise.all([probe('http://' + n + '.1/', 1500), probe('http://' + n + '.254/', 1500)]).then(function (r) { if (r[0] || r[1]) alive[n] = true; });
+        }).then(function () {
+          var nets = cands.filter(function (n, i) { return alive[n] || i < typed; }).slice(0, 2);
+          if (!nets.length) return scanEnd(id, { ok: false, t: 'Ev ağınız bulunamadı.', d: 'Modeminiz alışılmadık bir adres aralığı kullanıyor olabilir. Sorun değil: bu adımı yukarıdaki maddeleri izleyerek tamamlayın.' });
+          var jobs = [], hits = { tv: [], ps: [] }, n = 0;
+          nets.forEach(function (net) {
+            for (var h = 2; h < 255; h++) {
+              if (want.indexOf('tv') >= 0) jobs.push({ k: 'tv', ip: net + '.' + h, url: 'http://' + net + '.' + h + TVPORT[tv] });
+              jobs.push({ k: 'ps', ip: net + '.' + h, url: 'http://' + net + '.' + h + ':9295/' });
+            }
+          });
+          pool(jobs, 40, function (j) {
+            return probe(j.url, 1500).then(function (ok) { if (ok) hits[j.k].push(j.ip); n++; if (n % 20 === 0) scanMsg('Cihazlar aranıyor… %' + Math.round(n / jobs.length * 100)); });
+          }).then(function () {
+            if (hits.ps.length === 1) state.ips.ps = hits.ps[0];
+            if (hits.tv.length === 1) state.ips.tv = hits.tv[0];
+            save();
+            var netName = nets.join('.x, ') + '.x', res;
+            if (id === 'ip') {
+              res = hits.ps.length ? { ok: true, t: 'PS5 bulundu: ' + hits.ps.join(', '), d: hits.ps.length === 1 ? 'Bu adresi CouchSubs\'taki IP alanına yazın.' : 'Birden fazla cihaz yanıt verdi; doğru olanı PS5\'in Bağlantı Durumu ekranından kontrol edin.' }
+                : { ok: false, t: 'PS5 bulunamadı.', d: 'Taranan ağ: ' + netName + '. PS5 açık mı ve Uzaktan Oynama etkin mi? Olmuyorsa adresi PS5\'ten elle okuyun.' };
+            } else {
+              var psNote = hits.ps.length ? ' PS5 de bulundu: ' + hits.ps.join(', ') + '.' : ' PS5 bu aşamada görünmeyebilir; Uzaktan Oynama\'yı açtıktan sonra IP adresi adımında yeniden aranır.';
+              res = hits.tv.length ? { ok: true, t: 'TV olabilecek cihaz bulundu: ' + hits.tv.join(', '), d: 'Bu cihazla aynı ağda (' + netName + ').' + psNote }
+                : { ok: false, t: 'TV bulunamadı.', d: 'Taranan ağ: ' + netName + '. TV açık mı ve aynı Wi-Fi\'de mi? Bazı TV\'ler taramaya yanıt vermez; bu, farklı ağda olduğu anlamına gelmeyebilir. Emin olmak için TV\'nin ağ ayarlarındaki ağ adına bakın.' + psNote };
+            }
+            scanEnd(id, res);
+          });
+        });
+      });
+    });
+  }
+  function scanBox(id) {
+    var sc = state.scan && state.scan.id === id ? state.scan : null, r = sc && sc.res;
+    return '<div class="viz"><span class="cap">' + (id === 'ip' ? 'PS5\'i otomatik bul' : 'Ağı otomatik tara') + '</span>' +
+      '<p class="small muted">Tarayıcınız izin verirse kılavuz ev ağınızı tarayıp ' + (id === 'ip' ? 'PS5\'in adresini' : 'TV\'yi') + ' kendisi bulur. Tarama yalnızca bu cihazdan yapılır; bulunan adresler bu tarayıcının dışına gönderilmez.</p>' +
+      '<button data-act="scan" data-scan="' + id + '"' + (sc && sc.busy ? ' disabled' : '') + '>' + (sc && sc.busy ? 'Taranıyor…' : (r ? 'Yeniden tara' : 'Ağımı tara')) + '</button>' +
+      (sc && sc.busy ? '<p class="res" id="scanStatus" role="status">' + (sc.msg || '') + '</p>' : '') +
+      (r ? '<p class="res ' + (r.ok ? 'good' : 'bad') + '" role="status"><b>' + r.t + '</b>' + r.d + '</p>' : '') +
+      '<small>Deneysel: yalnızca Chrome ve Edge\'in güncel sürümlerinde çalışır, yaklaşık 20 saniye sürer. Çalışmazsa bu adımı yukarıdaki maddeleri izleyerek tamamlayın.</small></div>';
+  }
+
   var CELL = (function () { try { var c = navigator.connection || navigator.mozConnection || navigator.webkitConnection; return !!(c && c.type === 'cellular'); } catch (e) { return false; } })();
 
   // A plain drawing of where to go and which keys to press. Not a screenshot.
@@ -376,7 +470,7 @@ footer ul { margin: 0; padding-left: 18px; }
     return h + '<small>Temsili çizimdir; ekranınızdaki görünüm ve adlar biraz farklı olabilir.</small></div>';
   }
 
-  var state = { view: 'home', tv: null, dev: null, idx: 0, max: 0, help: false, unsure: false, iphone: false, fix: null, back: 'steps', ips: { ps: '', tv: '', dev: '' }, ipres: null };
+  var state = { view: 'home', tv: null, dev: null, idx: 0, max: 0, help: false, unsure: false, iphone: false, fix: null, back: 'steps', ips: { ps: '', tv: '', dev: '' }, ipres: null, scan: null };
   try {
     var saved = JSON.parse(localStorage.getItem(KEY) || 'null');
     if (saved && typeof saved === 'object') {
@@ -451,8 +545,8 @@ footer ul { margin: 0; padding-left: 18px; }
         '<ol class="do">' + li(st.todo) + '</ol>' +
         (st.viz ? viz(st.viz) : '') +
         (st.id === 'ag' && CELL ? '<p class="res bad"><b>Bu cihaz şu an mobil veriyle bağlı görünüyor.</b>Wi-Fi\'yi açıp ev ağınıza bağlanın.</p>' : '') +
-        (st.id === 'ag' ? ipForm(state.dev === 'android' ? 'Telefonun' : 'Bilgisayarın', state.dev) : '') +
-        (st.id === 'ip' && ipParts(state.ips.ps) ? '<p class="term">İlk adımda yazdığınız PS5 adresi: <b>' + ipParts(state.ips.ps).join('.') + '</b></p>' : '') +
+        (st.id === 'ag' || st.id === 'ip' ? scanBox(st.id) : '') +
+        (st.id === 'ip' && ipParts(state.ips.ps) ? '<p class="term">Kayıtlı PS5 adresi: <b>' + ipParts(state.ips.ps).join('.') + '</b></p>' : '') +
         (st.links ? '<div class="btns">' + st.links.map(function (x) { return '<a class="linkbtn" href="' + x.h + '" target="_blank" rel="noopener">' + x.l + '</a>'; }).join('') + '</div>' : '') +
         '<p class="see"><b>Şunu görmelisiniz</b>' + st.see + '</p>' +
         (state.help ? '<div class="help" id="helpBox"><h3>Takıldıysanız</h3><ul class="plain">' + li(st.help) + '</ul></div>' : '') +
@@ -491,6 +585,7 @@ footer ul { margin: 0; padding-left: 18px; }
       list.forEach(function (x, i) { if (x.id === want && !at) at = i; });
       state.view = 'steps'; state.idx = at; state.help = false; if (at > state.max) state.max = at;
     }
+    else if (act === 'scan') { if (!(state.scan && state.scan.busy)) runScan(b.getAttribute('data-scan')); return; }
     else if (act === 'ipcheck') { state.ipres = ipCheck(state.dev === 'android' ? 'Telefon' : 'Bilgisayar'); top = false; }
     else if (act === 'fix') { state.back = state.view; state.view = 'fix'; state.fix = null; }
     else if (act === 'fixlist') { state.fix = null; }
@@ -511,7 +606,7 @@ footer ul { margin: 0; padding-left: 18px; }
       if (state.idx + 1 >= n) state.view = 'end'; else state.idx++;
     }
     else if (act === 'review') { state.view = 'steps'; state.idx = 0; }
-    else if (act === 'reset') { state = { view: 'home', tv: null, dev: null, idx: 0, max: 0, help: false, unsure: false, iphone: false, fix: null, back: 'steps', ips: { ps: '', tv: '', dev: '' }, ipres: null }; }
+    else if (act === 'reset') { state = { view: 'home', tv: null, dev: null, idx: 0, max: 0, help: false, unsure: false, iphone: false, fix: null, back: 'steps', ips: { ps: '', tv: '', dev: '' }, ipres: null, scan: null }; }
     render(top ? 'stepTitle' : null);
   });
 
