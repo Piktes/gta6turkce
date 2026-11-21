@@ -150,18 +150,20 @@ footer ul { margin: 0; padding-left: 18px; }
 (function () {
   var KEY = 'ps5-altyazi-kilavuz-v1';
   var TV = {
-    google: { name: 'Google TV / Android TV', note: 'Sony, Philips, TCL, Xiaomi gibi markaların çoğu' },
-    samsung: { name: 'Samsung', note: '2016 ve sonrası modeller' },
+    google: { name: 'Google TV / Android TV', note: 'Vestel, Arçelik, Beko, Grundig, Philips, Sony, TCL, Xiaomi gibi markalar' },
+    samsung: { name: 'Samsung', note: '2019 ve sonrası; 2016-2018 modeller deneysel' },
     lg: { name: 'LG', note: 'webOS 4 ve üstü, kabaca 2018 ve sonrası' }
   };
   var DEV = {
     android: { name: 'Android telefon ya da tablet', note: 'Uygulama Google Play\'den kurulur' },
     windows: { name: 'Windows bilgisayar', note: 'Masaüstü ya da dizüstü' },
-    mac: { name: 'Mac bilgisayar', note: 'MacBook, iMac ya da Mac mini' }
+    mac: { name: 'Mac bilgisayar', note: 'MacBook, iMac ya da Mac mini' },
+    ios: { name: 'iPhone ya da iPad', note: 'App Store ya da TestFlight üzerinden kurulur' }
   };
   var UA = (typeof navigator !== 'undefined' && navigator.userAgent) || '';
   var TOUCH = (typeof navigator !== 'undefined' && navigator.maxTouchPoints) || 0;
   var HERE = /Android/i.test(UA) ? 'android' : (/iPhone|iPad|iPod/i.test(UA) || (/Macintosh/i.test(UA) && TOUCH > 1)) ? 'ios' : /Macintosh|Mac OS X/i.test(UA) ? 'mac' : /Windows/i.test(UA) ? 'windows' : null;
+  function PH(d) { return d === 'android' || d === 'ios'; }
   var P = function (s) { return '<span class="path">' + s + '</span>'; };
   var NET = 'Telefon ya da bilgisayar, TV ve PS5 aynı ev internetine bağlı mı? Biri misafir ağında ya da mobil veride kalmış olabilir.';
 
@@ -170,7 +172,7 @@ footer ul { margin: 0; padding-left: 18px; }
     var s = [];
     s.push({ id: 'ag', t: 'Üç cihazı aynı ev internetine bağlayın',
       why: 'CouchSubs PS5\'i ve TV\'yi ancak aynı ağdaysa bulabilir. Kurulumdaki sorunların çoğu buradan çıkar.',
-      todo: ['<b>PS5:</b> ' + P('Ayarlar › Ağ › Bağlantı Durumu') + ' ekranında bağlı olduğu ağın adına bakın.', '<b>TV:</b> TV\'nin ağ ayarlarında aynı ağa bağlı olduğunu kontrol edin.', '<b>' + (dev === 'android' ? 'Telefon' : 'Bilgisayar') + ':</b> Wi-Fi ayarlarında aynı ağ adının seçili olduğunu kontrol edin' + (dev === 'android' ? '; mobil veriyle değil Wi-Fi ile bağlı olmalı.' : '.')],
+      todo: ['<b>PS5:</b> ' + P('Ayarlar › Ağ › Bağlantı Durumu') + ' ekranında bağlı olduğu ağın adına bakın.', '<b>TV:</b> TV\'nin ağ ayarlarında aynı ağa bağlı olduğunu kontrol edin.', '<b>' + (PH(dev) ? 'Telefon' : 'Bilgisayar') + ':</b> Wi-Fi ayarlarında aynı ağ adının seçili olduğunu kontrol edin' + (PH(dev) ? '; mobil veriyle değil Wi-Fi ile bağlı olmalı.' : '.')],
       see: 'Üç cihaz da aynı modeme bağlı.',
       help: ['Modeminizde "misafir ağı" varsa hiçbir cihaz onda olmamalı; misafir ağındaki cihazlar diğerlerini göremez.', 'Kabloyla bağlı cihaz sorun değildir; önemli olan hepsinin aynı modeme bağlı olması.', 'Bilgisayarınızda Wi-Fi yoksa TV\'yi ve bilgisayarı aynı modeme kabloyla bağlayın.'] });
 
@@ -180,13 +182,13 @@ footer ul { margin: 0; padding-left: 18px; }
       see: 'Elinizde ikinci hesabın e-postası ve şifresi var.',
       help: ['Hesabı PS5 üzerinden de açabilirsiniz: PS tuşuna basılı tutun, Güç › Kullanıcı Değiştir › Yeni Kullanıcı › Kullanıcı Oluştur yolunu izleyin.', 'Zaten ikinci bir hesabınız varsa (aileden biri için açılmış olabilir) onu kullanabilirsiniz.', 'Şimdi açmak istemezseniz bu adımı geçin: CouchSubs\'ın giriş sayfasında da yeni hesap açma seçeneği çıkar.'] });
 
-    s.push({ id: 'kur', links: dev === 'android' ? [{ l: 'Google Play\'de CouchSubs\'ı aç', h: 'https://play.google.com/store/apps/details?id=com.couchsubs.mobile' }] : [{ l: 'CouchSubs indirme sayfasını aç', h: 'https://couchsubs.enmeraapps.com' }], t: 'CouchSubs\'ı ' + (dev === 'android' ? 'telefonunuza' : 'bilgisayarınıza') + ' kurun',
+    s.push({ id: 'kur', links: dev === 'ios' ? [{ l: 'TestFlight bağlantısını aç', h: 'https://testflight.apple.com/join/Um3jb5Fx' }, { l: 'CouchSubs sitesindeki iPhone yönergesini aç', h: 'https://couchsubs.enmeraapps.com' }] : dev === 'android' ? [{ l: 'Google Play\'de CouchSubs\'ı aç', h: 'https://play.google.com/store/apps/details?id=com.couchsubs.mobile' }] : [{ l: 'CouchSubs indirme sayfasını aç', h: 'https://couchsubs.enmeraapps.com' }], t: 'CouchSubs\'ı ' + (PH(dev) ? 'telefonunuza' : 'bilgisayarınıza') + ' kurun',
       why: 'CouchSubs oyundaki İngilizce altyazıyı okuyup Türkçeye çeviren ücretsiz uygulamadır.',
-      todo: dev === 'android'
+      todo: dev === 'ios' ? ['App Store\'u açın ve <b>CouchSubs</b> diye aratın; çıkıyorsa yükleyip açın.', 'Çıkmıyorsa App Store\'dan <b>TestFlight</b> uygulamasını yükleyin.', 'Aşağıdaki TestFlight bağlantısını iPhone\'da açın, <b>Kabul Et</b> ve <b>Yükle</b>\'ye basın.'] : dev === 'android'
         ? ['Google Play\'i açın ve <b>CouchSubs</b> diye aratın.', 'Uygulamayı yükleyip açın.']
         : ['<a href="https://couchsubs.enmeraapps.com" target="_blank" rel="noopener">couchsubs.enmeraapps.com</a> adresini açın.', (dev === 'mac' ? 'Mac' : 'Windows') + ' sürümünü indirip kurun ve açın.'],
       see: 'CouchSubs açıldı ve karşınıza konsol seçme ekranı geldi.',
-      help: dev === 'android'
+      help: dev === 'ios' ? ['iPhone sürümü yeni: App Store\'da henüz görünmüyorsa TestFlight yolu geçerlidir.', 'TestFlight bağlantısı açılmazsa güncel bağlantı CouchSubs sitesinde yazıyor.'] : dev === 'android'
         ? ['Mağazada bulamazsanız uygulamanın paket adı <b>com.couchsubs.mobile</b>; bu adla aratın.', 'Android telefonunuz yoksa bilgisayara da kurabilirsiniz: aşağıdan "Seçimi değiştir"e basın.']
         : ['İndirme sayfası açılmazsa uygulamanın <a href="https://github.com/yorulmazsinan/couchsubs" target="_blank" rel="noopener">GitHub sayfasına</a> bakın.', 'Bilgisayarınız güvenlik uyarısı gösterebilir; uygulama mağaza dışından indirildiği için bu beklenen bir uyarıdır.'] });
 
@@ -239,9 +241,9 @@ footer ul { margin: 0; padding-left: 18px; }
         see: 'Geliştirici Modu penceresi açıldı.',
         help: ['Kumandanızda rakam tuşu yoksa önce <b>123</b> düğmesine basın; ekranda rakamlar çıkar.', 'Pencere açılmadıysa "Uygulama Ayarları" ekranındayken rakamları yeniden tuşlayın.'] });
       s.push({ t: 'Geliştirici Modu\'nu açıp IP adresini yazın',
-        todo: [P('Geliştirici Modu') + ' seçeneğini <b>Açık</b> yapın.', P('Host PC IP') + ' alanına CouchSubs\'ın kurulu olduğu ' + (dev === 'android' ? 'telefonun' : 'bilgisayarın') + ' IP adresini yazın.'],
+        todo: [P('Geliştirici Modu') + ' seçeneğini <b>Açık</b> yapın.', P('Host PC IP') + ' alanına CouchSubs\'ın kurulu olduğu ' + (PH(dev) ? 'telefonun' : 'bilgisayarın') + ' IP adresini yazın.'],
         see: 'Geliştirici Modu açık ve IP alanı dolu.',
-        help: [dev === 'android' ? 'Telefonun IP adresi: Ayarlar › Wi-Fi › bağlı olduğunuz ağın ayrıntıları.' : (dev === 'mac' ? 'Mac\'in IP adresi: Sistem Ayarları › Wi-Fi › bağlı ağın yanındaki Ayrıntılar.' : 'Bilgisayarın IP adresi: Ayarlar › Ağ ve İnternet › bağlı ağın özellikleri, "IPv4 adresi" satırı.'), 'Buraya PS5\'in değil, CouchSubs\'ın çalıştığı cihazın adresini yazmalısınız.', 'Rakam tuşu olmayan kumandada yine <b>123</b> düğmesini kullanın.'] });
+        help: [dev === 'ios' ? 'iPhone\'un IP adresi: Ayarlar › Wi-Fi › bağlı ağın yanındaki (i) simgesi.' : PH(dev) ? 'Telefonun IP adresi: Ayarlar › Wi-Fi › bağlı olduğunuz ağın ayrıntıları.' : (dev === 'mac' ? 'Mac\'in IP adresi: Sistem Ayarları › Wi-Fi › bağlı ağın yanındaki Ayrıntılar.' : 'Bilgisayarın IP adresi: Ayarlar › Ağ ve İnternet › bağlı ağın özellikleri, "IPv4 adresi" satırı.'), 'Buraya PS5\'in değil, CouchSubs\'ın çalıştığı cihazın adresini yazmalısınız.', 'Rakam tuşu olmayan kumandada yine <b>123</b> düğmesini kullanın.'] });
       s.push({ t: 'TV\'yi fişten çekip yeniden takın',
         why: 'Geliştirici modu TV tamamen kapanıp açılınca devreye girer. Kumandadan kapatmak yetmez.',
         todo: ['TV\'nin fişini prizden çekin.', 'Birkaç saniye bekleyip yeniden takın ve TV\'yi açın.'],
@@ -250,7 +252,7 @@ footer ul { margin: 0; padding-left: 18px; }
       s.push({ id: 'tvsec', t: 'CouchSubs\'ta TV\'nizi seçin',
         todo: ['CouchSubs\'a dönün; uygulama ağdaki TV\'leri arar.', 'Listeden kendi TV\'nizi seçin.'],
         see: 'TV\'niz seçili ve uygulama kuruluma hazır.',
-        help: ['TV listede yoksa Host PC IP alanına yazdığınız adresi kontrol edin; ' + (dev === 'android' ? 'telefonun' : 'bilgisayarın') + ' adresi değişmiş olabilir.', 'TV\'yi fişten çekip taktığınızdan emin olun; geliştirici modu ancak ondan sonra devreye girer.', NET] });
+        help: ['TV listede yoksa Host PC IP alanına yazdığınız adresi kontrol edin; ' + (PH(dev) ? 'telefonun' : 'bilgisayarın') + ' adresi değişmiş olabilir.', 'TV\'yi fişten çekip taktığınızdan emin olun; geliştirici modu ancak ondan sonra devreye girer.', NET] });
       s.push({ id: 'tvkur', t: 'Kurulumu tamamlayın',
         todo: ['CouchSubs\'taki yönergeleri izleyin.', 'Uygulama dosyaları TV\'ye yükler; bitmesini bekleyin.'],
         see: 'CouchSubs kurulumun bittiğini söylüyor.',
@@ -286,7 +288,8 @@ footer ul { margin: 0; padding-left: 18px; }
     }
 
     s.push({ id: 'start', t: 'Çeviriyi başlatın',
-      todo: ['CouchSubs\'ta ' + P('Çeviriyi Başlat') + ' düğmesine basın.', 'PS5\'te kendi ana hesabınıza geçip GTA 6\'yı açın.'],
+      why: 'Oyunu mutlaka ana hesabınızla oynayın. CouchSubs\'ın giriş yaptığı ikinci hesapla oynarsanız kol kendiliğinden kapanır ya da oyunda çalışmaz.',
+      todo: ['CouchSubs\'ta ' + P('Çeviriyi Başlat') + ' düğmesine basın.', 'Kolu açınca PS5\'te <b>ana hesabınızı</b> seçin ve GTA 6\'yı açın.'],
       see: 'Uygulama çevirinin çalıştığını gösteriyor.',
       help: ['TV\'de "Uzaktan Oynatma bağlantısı kuruldu" bildirimi çıkması normaldir; son adımda nasıl gizleneceği var.'] });
     s.push({ id: 'subs', t: 'GTA 6\'da İngilizce altyazıyı açın',
@@ -295,7 +298,7 @@ footer ul { margin: 0; padding-left: 18px; }
       see: 'Ekrana İngilizce satır geldiğinde Türkçe altyazı da kendiliğinden beliriyor.',
       help: ['Türkçe satır çıkmıyorsa CouchSubs\'ta çevirinin hâlâ açık olduğuna bakın.', 'TV\'de görüntü yoksa OK\'e basıp açılan panelden PS5\'in bağlı olduğu HDMI girişini seçin.', NET] });
     s.push({ id: 'tune', t: 'İnce ayarlar (isteğe bağlı)',
-      todo: ['CouchSubs ayarlarında Türkçe altyazının konumunu ' + P('Üstünde') + ' yapın; böylece oyunun kendi altyazısı ve tuş ipuçları kapanmaz.', 'Aynı yerden altyazının boyutunu ve rengini değiştirebilirsiniz.', 'Bağlantı bildirimini gizlemek için PS5\'te ' + P('Ayarlar › Sistem › Uzaktan Oynama') + ' altında ' + P('Uzaktan Oynatma Bağlantı Durumunu Gizle') + ' seçeneğini açın.'],
+      todo: ['CouchSubs ayarlarında Türkçe altyazının konumunu ' + P('Üstünde') + ' yapın; böylece oyunun kendi altyazısı ve tuş ipuçları kapanmaz.', 'Aynı yerden altyazının boyutunu ve rengini değiştirebilirsiniz.', 'Bağlantı bildirimini gizlemek için PS5\'te ' + P('Ayarlar › Sistem › Uzaktan Oynama') + ' altında ' + P('Uzaktan Oynatma Bağlantı Durumunu Gizle') + ' seçeneğini açın. Bunu hem ana hesabınızda hem ikinci hesapta yapın.'],
       see: 'Altyazı rahat okunuyor.',
       help: ['Ücretsiz çeviri iş görür. Daha hızlı ve kaliteli çeviri isterseniz CouchSubs ayarlarına Gemini ya da DeepL API anahtarı eklenebiliyor; ayrıntısı kaynak rehberde.'] });
     var MIN = { ag: 2, hesap: 5, kur: 2, giris: 2, remote: 2, pair: 1, ip: 2, usb: 1, lgdev: 2, tvsec: 1, tvkur: 2, start: 1, subs: 2, tune: 2, tvdev: tv === 'lg' ? 5 : 1 };
@@ -314,7 +317,7 @@ footer ul { margin: 0; padding-left: 18px; }
 
   // Symptoms for the troubleshooting wizard: q question, a fixes in the order to try, go step id to jump to.
   function buildFixes(tv, dev) {
-    var cihaz = dev === 'android' ? 'telefon' : 'bilgisayar';
+    var cihaz = PH(dev) ? 'telefon' : 'bilgisayar';
     var tvCheck = tv === 'google' ? 'TV\'de USB hata ayıklama açık mı? Kapalıysa uygulama TV\'ye ulaşamaz.'
       : tv === 'samsung' ? 'TV\'de Geliştirici Modu açık mı ve Host PC IP alanında ' + cihaz + 'ın güncel IP adresi mi yazıyor? Ayarı değiştirdiyseniz TV\'yi fişten çekip takın.'
       : 'TV\'deki Developer Mode uygulamasında Dev Mode Status açık mı? Açtıktan sonra TV yeniden başlamış olmalı.';
@@ -497,7 +500,7 @@ footer ul { margin: 0; padding-left: 18px; }
       h = '<div class="card"><h1>GTA 6\'yı PS5\'te Türkçe altyazıyla oynayın</h1>' +
         '<p>Oyunda Türkçe yok ve konsola yama kurulamıyor. Bunun yerine ücretsiz <b>CouchSubs</b> uygulaması oyundaki İngilizce altyazıyı okur ve Türkçesini TV\'de oyunun üstünde gösterir.</p>' +
         '<div class="tv" aria-label="Örnek ekran görüntüsü"><span class="label">Örnek</span><div class="tr">Dokuzda iskelede buluşalım.</div><div class="en">Meet me at the dock at nine.</div></div>' +
-        '<p class="eyebrow">Gerekenler</p><ul class="plain">' + li(['PS5 ve GTA 6', 'Akıllı TV: Google TV / Android TV, Samsung ya da LG', 'Android telefon <b>ya da</b> Windows / Mac bilgisayar (biri yeterli)', 'Hepsinin aynı ev internetine bağlı olması', 'Ücretsiz ikinci bir PlayStation hesabı (birlikte açacağız)']) + '</ul>' +
+        '<p class="eyebrow">Gerekenler</p><ul class="plain">' + li(['PS5 ve GTA 6', 'Akıllı TV: Google TV / Android TV, Samsung ya da LG', 'Telefon (Android ya da iPhone) <b>ya da</b> Windows / Mac bilgisayar (biri yeterli)', 'Hepsinin aynı ev internetine bağlı olması', 'Ücretsiz ikinci bir PlayStation hesabı (birlikte açacağız)']) + '</ul>' +
         '<p class="muted small">Kurulum bir kereliktir ve yaklaşık 20-30 dakika sürer; sonraki oynayışlarda bu adımlar tekrarlanmaz. Her adımı yapınca "Yaptım"a basacaksınız.</p>' +
         '<div class="btns"><button class="primary" data-act="start">Başla</button></div></div>';
     } else if (state.view === 'tv') {
@@ -505,19 +508,19 @@ footer ul { margin: 0; padding-left: 18px; }
         '<div class="choices">' +
         Object.keys(TV).map(function (k) { return '<button class="choice" data-tv="' + k + '" aria-pressed="' + (state.tv === k) + '"><b>' + TV[k].name + '</b><span>' + TV[k].note + '</span></button>'; }).join('') +
         '<button class="choice" data-act="unsure" aria-expanded="' + state.unsure + '"><b>Emin değilim</b><span>TV türünü nasıl anlarım?</span></button></div>' +
-        (state.unsure ? '<div class="help"><h3>TV türünü anlamak</h3><ul class="plain">' + li(['TV\'nin üzerinde <b>Samsung</b> yazıyorsa Samsung\'u, <b>LG</b> yazıyorsa LG\'yi seçin.', 'Başka bir markaysa kumandadaki ana ekran tuşuna basın. Ekranda "Google TV" ya da "Android TV" yazıyorsa veya Google Play Store varsa ilk seçeneği seçin.', 'Hiçbiri değilse (uygulama mağazası olmayan ya da farklı bir sistem kullanan TV) bu yöntem TV\'nizde çalışmayabilir.']) + '</ul></div>' : '') +
+        (state.unsure ? '<div class="help"><h3>TV türünü anlamak</h3><ul class="plain">' + li(['TV\'nin üzerinde <b>Samsung</b> yazıyorsa Samsung\'u, <b>LG</b> yazıyorsa LG\'yi seçin.', 'Başka bir markaysa kumandadaki ana ekran tuşuna basın. Ekranda "Google TV" ya da "Android TV" yazıyorsa veya Google Play Store varsa ilk seçeneği seçin.', 'Hiçbiri değilse (uygulama mağazası olmayan ya da farklı bir sistem kullanan TV) CouchSubs TV\'nize kurulamayabilir. Yine de kullanılabiliyor: Türkçe altyazı TV yerine telefonun ya da bilgisayarın ekranında gösterilir.']) + '</ul></div>' : '') +
         '<div class="btns"><button class="ghost" data-act="home">Geri</button></div></div>';
     } else if (state.view === 'dev') {
       var keys = Object.keys(DEV);
       if (DEV[HERE]) keys = [HERE].concat(keys.filter(function (k) { return k !== HERE; }));
-      var iosNote = '<p class="term"><b>' + (HERE === 'ios' ? 'Şu an bir iPhone ya da iPad kullanıyorsunuz.' : 'iPhone ya da iPad\'iniz mi var?') + '</b> CouchSubs bunlara kurulamıyor. Aşağıdaki cihazlardan biri gerekli: evdeki bir bilgisayar ya da Android bir tablet de olur. Bu kılavuzu iPhone\'dan okuyarak takip edebilirsiniz.</p>';
+      var iosNote = '';
       h = '<div class="card"><p class="eyebrow">Soru 2 / 2</p><h2>Çeviri uygulamasını nereye kuracaksınız?</h2>' +
         '<p class="muted">CouchSubs bir telefonda <b>ya da</b> bir bilgisayarda çalışır. Aşağıdakilerden yalnızca biri yeterli; hangisi elinizdeyse onu seçin.</p>' +
         (HERE === 'ios' ? iosNote : '') +
         '<div class="choices">' +
         keys.map(function (k) { return '<button class="choice" data-dev="' + k + '" aria-pressed="' + (state.dev === k) + '">' + (k === HERE ? '<em class="badge">Şu an bu cihazdasınız</em>' : '') + '<b>' + DEV[k].name + '</b><span>' + DEV[k].note + '</span></button>'; }).join('') +
         '</div>' + (HERE === 'ios' ? '' : iosNote) +
-        '<p class="muted small">Seçtiğiniz cihaz oyun oynarken açık ve PS5 ile aynı ev internetinde kalmalı.</p>' +
+        '<p class="muted small">Seçtiğiniz cihaz oyun oynarken açık ve PS5 ile aynı ev internetinde kalmalı. Kurulumu uygulamanın kendi sihirbazı da adım adım gösterir; bu kılavuz onunla birlikte kullanılır.</p>' +
         '<div class="btns"><button class="ghost" data-act="totv">Geri</button></div></div>';
     } else if (state.view === 'fix') {
       var fixes = buildFixes(state.tv, state.dev);
@@ -586,7 +589,7 @@ footer ul { margin: 0; padding-left: 18px; }
       state.view = 'steps'; state.idx = at; state.help = false; if (at > state.max) state.max = at;
     }
     else if (act === 'scan') { if (!(state.scan && state.scan.busy)) runScan(b.getAttribute('data-scan')); return; }
-    else if (act === 'ipcheck') { state.ipres = ipCheck(state.dev === 'android' ? 'Telefon' : 'Bilgisayar'); top = false; }
+    else if (act === 'ipcheck') { state.ipres = ipCheck(PH(state.dev) ? 'Telefon' : 'Bilgisayar'); top = false; }
     else if (act === 'fix') { state.back = state.view; state.view = 'fix'; state.fix = null; }
     else if (act === 'fixlist') { state.fix = null; }
     else if (act === 'fixback') { state.view = state.back === 'end' ? 'end' : 'steps'; state.fix = null; }
