@@ -150,6 +150,12 @@ footer ul { margin: 0; padding-left: 18px; }
   // Every step in one place: t title, why short reason, term glossary line, todo list, see expected result, help tips.
   function buildSteps(tv, dev) {
     var s = [];
+    s.push({ id: 'ag', t: 'Üç cihazı aynı ev internetine bağlayın',
+      why: 'CouchSubs PS5\'i ve TV\'yi ancak aynı ağdaysa bulabilir. Kurulumdaki sorunların çoğu buradan çıkar.',
+      todo: ['<b>PS5:</b> ' + P('Ayarlar › Ağ › Bağlantı Durumu') + ' ekranında bağlı olduğu ağın adına bakın.', '<b>TV:</b> TV\'nin ağ ayarlarında aynı ağa bağlı olduğunu kontrol edin.', '<b>' + (dev === 'android' ? 'Telefon' : 'Bilgisayar') + ':</b> Wi-Fi ayarlarında aynı ağ adının seçili olduğunu kontrol edin' + (dev === 'android' ? '; mobil veriyle değil Wi-Fi ile bağlı olmalı.' : '.')],
+      see: 'Üç cihaz da aynı modeme bağlı.',
+      help: ['Modeminizde "misafir ağı" varsa hiçbir cihaz onda olmamalı; misafir ağındaki cihazlar diğerlerini göremez.', 'Kabloyla bağlı cihaz sorun değildir; önemli olan hepsinin aynı modeme bağlı olması.', 'Bilgisayarınızda Wi-Fi yoksa TV\'yi ve bilgisayarı aynı modeme kabloyla bağlayın.'] });
+
     s.push({ id: 'hesap', links: [{ l: 'PlayStation hesap oluşturma sayfasını aç', h: 'https://www.playstation.com/tr-tr/support/account/create-account/' }], t: 'İkinci bir PlayStation hesabı açın',
       why: 'Çeviri uygulaması PS5\'e bu hesapla bağlanır. Oyunu yine kendi hesabınızla oynarsınız.',
       todo: ['Kendi hesabınızdan farklı bir e-posta adresiyle ücretsiz bir PlayStation hesabı açın.', 'E-postayı ve şifreyi bir yere not edin; iki yerde gerekecek.'],
@@ -199,8 +205,12 @@ footer ul { margin: 0; padding-left: 18px; }
         todo: ['TV\'de ' + P('Ayarlar › Cihaz Tercihleri › Geliştirici seçenekleri') + ' menüsüne girin. Google TV\'de: ' + P('Ayarlar › Sistem › Geliştirici seçenekleri') + '.', P('USB hata ayıklama') + ' seçeneğini açın.', 'Listede varsa ' + P('Ağ üzerinden hata ayıklama') + ' seçeneğini de açın.'],
         see: 'USB hata ayıklama açık görünüyor.',
         help: ['"Geliştirici seçenekleri" görünmüyorsa bir önceki adım tamamlanmamıştır; geri dönüp 7 kez basmayı tekrarlayın.'] });
-      s.push({ id: 'tvkur', t: 'CouchSubs\'tan TV\'ye kurulumu başlatın',
-        todo: ['CouchSubs\'ı kapatıp yeniden açın.', 'TV kurulumunda ' + P('Android TV / Google TV') + ' seçeneğini seçin; uygulama TV\'nizi arar.', 'TV\'de USB hata ayıklama izni sorulduğunda <b>her zaman izin ver</b>\'i seçin.'],
+      s.push({ id: 'tvsec', t: 'CouchSubs\'ta TV\'nizi seçin',
+        todo: ['CouchSubs\'ı kapatıp yeniden açın.', 'TV kurulumunda ' + P('Android TV / Google TV') + ' seçeneğini seçin.', 'Uygulama ağdaki TV\'leri arar; listeden kendi TV\'nizi seçin.'],
+        see: 'TV\'nizi seçtiniz ve TV ekranında bir izin sorusu belirdi.',
+        help: ['TV listede yoksa USB hata ayıklamanın açık olduğunu kontrol edin.', NET, 'TV\'yi ve CouchSubs\'ı kapatıp açın, sonra yeniden aratın.'] });
+      s.push({ id: 'tvkur', t: 'TV\'deki izin sorusunu onaylayın',
+        todo: ['TV\'de USB hata ayıklama izni sorulduğunda <b>her zaman izin ver</b>\'i işaretleyip onaylayın.', 'CouchSubs uygulamayı TV\'ye yükler; bitmesini bekleyin.'],
         see: 'CouchSubs TV\'ye kuruldu ve TV\'de kendiliğinden açıldı.',
         help: ['TV\'de görüntü yoksa kumandada OK\'e basıp altyazı panelini açın, sol/sağ oklarla PS5\'in bağlı olduğu HDMI girişini seçin.', 'Kurulum yine olmuyorsa <a href="https://github.com/yorulmazsinan/couchsubs" target="_blank" rel="noopener">GitHub sayfasındaki</a> <b>CouchSubs-androidtv.apk</b> dosyasını USB belleğe atıp TV\'ye oradan kurun.', NET] });
     }
@@ -219,10 +229,14 @@ footer ul { margin: 0; padding-left: 18px; }
         todo: ['TV\'nin fişini prizden çekin.', 'Birkaç saniye bekleyip yeniden takın ve TV\'yi açın.'],
         see: 'TV yeniden açıldı.',
         help: ['Fişe ulaşamıyorsanız kumandanın güç tuşunu TV yeniden başlayana kadar basılı tutmayı deneyin.'] });
-      s.push({ id: 'tvkur', t: 'CouchSubs\'tan TV\'ye kurulumu tamamlayın',
-        todo: ['CouchSubs\'a dönün; uygulama ağdaki TV\'leri arar.', 'Listeden TV\'nizi seçin.', 'Ekrandaki yönergeleri izleyin; uygulama dosyaları TV\'ye yükler.'],
+      s.push({ id: 'tvsec', t: 'CouchSubs\'ta TV\'nizi seçin',
+        todo: ['CouchSubs\'a dönün; uygulama ağdaki TV\'leri arar.', 'Listeden kendi TV\'nizi seçin.'],
+        see: 'TV\'niz seçili ve uygulama kuruluma hazır.',
+        help: ['TV listede yoksa Host PC IP alanına yazdığınız adresi kontrol edin; ' + (dev === 'android' ? 'telefonun' : 'bilgisayarın') + ' adresi değişmiş olabilir.', 'TV\'yi fişten çekip taktığınızdan emin olun; geliştirici modu ancak ondan sonra devreye girer.', NET] });
+      s.push({ id: 'tvkur', t: 'Kurulumu tamamlayın',
+        todo: ['CouchSubs\'taki yönergeleri izleyin.', 'Uygulama dosyaları TV\'ye yükler; bitmesini bekleyin.'],
         see: 'CouchSubs kurulumun bittiğini söylüyor.',
-        help: ['TV listede yoksa Host PC IP alanına yazdığınız adresi kontrol edin; ' + (dev === 'android' ? 'telefonun' : 'bilgisayarın') + ' adresi değişmiş olabilir.', NET] });
+        help: ['Kurulum yarıda kalırsa Host PC IP adresini yeniden kontrol edip bir önceki adımdan tekrar deneyin.', NET] });
     }
     if (tv === 'lg') {
       s.push({ id: 'tvdev', links: [{ l: 'LG geliştirici sitesini aç', h: 'https://webostv.developer.lge.com' }], t: 'Ücretsiz LG geliştirici hesabı açın',
@@ -239,7 +253,7 @@ footer ul { margin: 0; padding-left: 18px; }
         todo: ['TV\'de Developer Mode uygulamasını açın.', 'Az önce açtığınız LG geliştirici hesabının e-postası ve şifresiyle giriş yapın.', P('Dev Mode Status') + ' seçeneğini açın. TV yeniden başlar.'],
         see: 'TV yeniden başladı.',
         help: ['Giriş olmuyorsa hesabın e-posta onayını tamamladığınızdan emin olun.'] });
-      s.push({ t: 'CouchSubs\'ta TV\'nize bağlanın',
+      s.push({ id: 'tvsec', t: 'CouchSubs\'ta TV\'nize bağlanın',
         todo: ['CouchSubs\'ı açın.', 'Listeden TV\'nizi seçip <b>Bağlan</b>\'a basın.'],
         see: 'Uygulama sizden bir parola istiyor.',
         help: ['TV listede yoksa TV\'nin açık olduğundan ve yeniden başlamasının bittiğinden emin olun.', NET] });
@@ -279,8 +293,9 @@ footer ul { margin: 0; padding-left: 18px; }
       : tv === 'samsung' ? 'Host PC IP alanındaki adres ' + cihaz + 'ın şu anki adresiyle aynı mı? Modem yeniden başladıysa adres değişmiş olabilir.'
       : 'TV\'de Developer Mode uygulaması açık ve Key Server açık mı? Uygulama kapanırsa parola geçersiz olur.';
     return [
-      { q: 'CouchSubs TV\'mi bulamıyor', go: 'tvdev', a: [NET, tvCheck, 'Bilgisayarınızda Wi-Fi yoksa TV\'yi ve bilgisayarı aynı modeme kabloyla bağlayın.', 'TV\'yi ve CouchSubs\'ı kapatıp açın, sonra yeniden aratın.'] },
+      { q: 'CouchSubs TV\'mi bulamıyor', go: 'tvsec', a: [NET, tvCheck, 'Bilgisayarınızda Wi-Fi yoksa TV\'yi ve bilgisayarı aynı modeme kabloyla bağlayın.', 'TV\'yi ve CouchSubs\'ı kapatıp açın, sonra yeniden aratın.'] },
       { q: 'TV\'ye kurulum yarıda kalıyor', go: 'tvkur', a: [tvInstall, NET, 'Sorun sürerse CouchSubs\'ın GitHub sayfasındaki sorun giderme notlarına bakın (bağlantı sayfanın altında).'] },
+      { q: 'Cihazlar aynı ağda mı, emin değilim', go: 'ag', a: ['PS5, TV ve CouchSubs\'ın kurulu olduğu cihaz aynı modeme bağlı olmalı.', 'Ağ adlarını üç cihazda tek tek karşılaştırın; "İlgili adıma git" nereye bakacağınızı gösterir.', 'Hiçbiri misafir ağında ya da mobil veride olmamalı.'] },
       { q: 'PS5 eşleşmiyor ya da kod kabul edilmiyor', go: 'pair', a: ['Kodun süresi kısadır: PS5\'te "Cihazı Eşleştir"e yeniden basıp yeni kodu hemen girin.', 'PS5\'te Uzaktan Oynama açık mı ve ikinci hesabın kutusu işaretli mi?', 'CouchSubs\'a ana hesabınızla değil, ikinci hesapla giriş yaptığınızdan emin olun.', 'PS5\'in IP adresini noktalarıyla ve boşluksuz yazdınız mı?', NET] },
       { q: 'TV\'de görüntü yok ya da ekran siyah', go: 'tvkur', a: [tv === 'google' ? 'Kumandada OK\'e basın; açılan altyazı panelinde sol/sağ oklarla PS5\'in bağlı olduğu HDMI girişini seçin.' : 'TV\'de PS5\'in bağlı olduğu HDMI girişinin seçili olduğunu kontrol edin.', 'PS5\'in açık olduğundan ve dinlenme modunda olmadığından emin olun.', 'Sorun sürerse CouchSubs\'ın GitHub sayfasındaki sorun giderme notlarına bakın (bağlantı sayfanın altında).'] },
       { q: 'Türkçe altyazı hiç çıkmıyor', go: 'subs', a: ['CouchSubs\'ta "Çeviriyi Başlat"a bastınız mı? Uygulama çevirinin çalıştığını göstermeli.', 'Oyunda İngilizce altyazı açık mı? Uygulama yalnızca ekrandaki yazıyı okuyabilir.', 'Oyunda altyazı boyutunu Medium, arka planını Transparent yapın; uygulama yazıyı daha kolay okur.', 'CouchSubs\'ın kurulu olduğu ' + cihaz + ' açık ve aynı ağda mı? Ekranı kapanıp uykuya geçmiş olabilir.'] },
